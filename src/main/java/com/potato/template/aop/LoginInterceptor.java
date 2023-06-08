@@ -2,6 +2,7 @@ package com.potato.template.aop;
 
 import com.potato.template.annotation.LoginCheck;
 import com.potato.template.exception.BusinessException;
+import com.potato.template.mapper.UserTokenMapper;
 import com.potato.template.utils.HttpCodeEnum;
 import com.potato.template.utils.JwtUtils;
 import jakarta.annotation.Resource;
@@ -20,6 +21,9 @@ public class LoginInterceptor {
     private HttpServletRequest request;
 
     @Resource
+    private UserTokenMapper userTokenMapper;
+
+    @Resource
     public void setRequest(HttpServletRequest request) {
         this.request = request;
     }
@@ -33,6 +37,8 @@ public class LoginInterceptor {
         if (!tokenIsValid) {
             throw new BusinessException(HttpCodeEnum.NOT_LOGIN_ERROR);
         }
+
+//        userTokenMapper.selectById()
 
         // 验证通过后继续执行原方法
         return joinPoint.proceed();

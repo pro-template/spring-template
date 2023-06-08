@@ -3,11 +3,13 @@ package com.potato.template.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.potato.template.entity.User;
+import com.potato.template.entity.UserToken;
 import com.potato.template.entity.param.UserRegisterParam;
 import com.potato.template.entity.param.UserUpdateParam;
 import com.potato.template.entity.vo.UserVo;
 import com.potato.template.exception.BusinessException;
 import com.potato.template.mapper.UserMapper;
+import com.potato.template.mapper.UserTokenMapper;
 import com.potato.template.service.IUserService;
 import com.potato.template.utils.HttpCodeEnum;
 import com.potato.template.utils.JwtUtils;
@@ -23,6 +25,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private UserMapper userMapper;
+
+    @Resource
+    private UserTokenMapper userTokenMapper;
 
     /**
      * 盐值，混淆密码
@@ -40,7 +45,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BusinessException(HttpCodeEnum.SYSTEM_ERROR,"用户不存在或密码错误");
         }
         String token = JwtUtils.getJwtToken(user.getId(), user.getEmail());
-        return token;
+        UserToken userToken = userTokenMapper.selectById(user.getId());
+        if (userToken == null) {
+            userToken = new UserToken();
+            userToken.setUserId(user.getId());
+            userToken.setToken(token);
+            int insertResult = userTokenMapper.insert(userToken);
+            if(insertResult>0){
+                return token;
+            }
+        }else {
+            userToken.setToken(token);
+            int updateResult = userTokenMapper.updateById(userToken);
+            if(updateResult>0){
+                return token;
+            }
+        }
+        throw new BusinessException(HttpCodeEnum.SYSTEM_ERROR,"登录失败");
     }
 
     @Override
@@ -105,5 +126,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setPassword(encryptPassword);
         boolean result = this.updateById(user);
         return result;
+    }
+
+    @Override
+    public Boolean logout(String token) {
+        String userId = JwtUtils.parseId(token);
+        return userTokenMapper.deleteById(userId)>0;
     }
 }

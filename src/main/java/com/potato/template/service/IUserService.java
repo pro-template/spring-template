@@ -44,4 +44,11 @@ public interface IUserService extends IService<User> {
      * @return
      */
     Boolean updateUserinfo(UserUpdateParam userUpdateParam,String token);
+
+    /**
+     * 登出
+     * @param token
+     * @return
+     */
+    Boolean logout(String token);
 }

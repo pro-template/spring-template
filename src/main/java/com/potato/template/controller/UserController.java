@@ -32,9 +32,10 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    // todo
-    public Result logout(){
-        return Result.ok("登出成功");
+    @LoginCheck
+    public Result logout(@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String token){
+        Boolean success = userService.logout(token);
+        return Result.ok().data(success);
     }
 
     @PostMapping("/register")
