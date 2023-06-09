@@ -38,4 +38,9 @@ public class User implements Serializable {
     @TableField("email")
     private String email;
 
+    /**
+     * 用户头像
+     */
+    @TableField("avatar")
+    private String avatar;
 }

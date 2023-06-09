@@ -5,6 +5,7 @@ import com.potato.template.entity.User;
 import com.potato.template.entity.param.UserRegisterParam;
 import com.potato.template.entity.param.UserUpdateParam;
 import com.potato.template.entity.vo.UserVo;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface IUserService extends IService<User> {
 
@@ -44,4 +45,12 @@ public interface IUserService extends IService<User> {
      * @return
      */
     Boolean logout(String token);
+
+    /**
+     * 更新用户头像
+     * @param file
+     * @param token
+     * @return
+     */
+    String updateAvatar(MultipartFile file,String token);
 }

@@ -13,11 +13,17 @@ import com.potato.template.mapper.UserTokenMapper;
 import com.potato.template.service.IUserService;
 import com.potato.template.utils.HttpCodeEnum;
 import com.potato.template.utils.JwtUtils;
+import com.potato.template.utils.UploadUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 @Slf4j
@@ -128,5 +134,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public Boolean logout(String token) {
         String userId = JwtUtils.parseId(token);
         return userTokenMapper.deleteById(userId)>0;
+    }
+
+    @Override
+    public String updateAvatar(MultipartFile file,String token) {
+        try {
+            if(file.isEmpty()){
+                throw new BusinessException(HttpCodeEnum.PARAMS_ERROR, "文件不能为空");
+            }
+            //获取文件的内容
+            InputStream is = file.getInputStream();
+            boolean isImage = UploadUtils.isImage(is);
+            if(!isImage){
+                throw new BusinessException(HttpCodeEnum.PARAMS_ERROR, "上传文件不是图片");
+            }
+            // 获取文件名
+            String fileName = file.getOriginalFilename();
+            // 产生一个随机目录
+            String randomDir = UploadUtils.getDir();
+            // 产生一个随机文件名
+            String uuidFilename = UploadUtils.getUUIDName(fileName);
+            String resourcePath = getClass().getResource("/").getPath();
+            File fileDir = new File(resourcePath+"static/"+"avatar" + randomDir);
+            //若文件夹不存在,则创建出文件夹
+            if (!fileDir.exists()) {
+                fileDir.mkdirs();
+            }
+            //创建新的文件夹
+            File newFile = new File(fileDir, uuidFilename);
+            String userId = JwtUtils.parseId(token);
+
+            //将保存的文件路径更新到用户信息
+            String savePath = "http://localhost:3000/avatar"+ randomDir + "/" + uuidFilename;
+            log.info(savePath);
+            User user = new User();
+            user.setId(userId);
+            user.setAvatar(savePath);
+            boolean saveResult = this.updateById(user);
+            if (!saveResult) {
+                throw new BusinessException(HttpCodeEnum.SYSTEM_ERROR, "上传头像失败，数据库错误");
+            }
+            file.transferTo(newFile);
+            return savePath;
+        } catch (IOException e) {
+            throw new BusinessException(HttpCodeEnum.SYSTEM_ERROR, "上传头像失败");
+        }
     }
 }

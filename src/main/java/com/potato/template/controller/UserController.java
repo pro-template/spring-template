@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @CrossOrigin
@@ -59,5 +60,13 @@ public class UserController {
     public Result updateUserinfo(@RequestBody @Validated UserUpdateParam userUpdateParam,@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String token){
         boolean result = userService.updateUserinfo(userUpdateParam,token);
         return Result.ok().data(result);
+    }
+
+    @PutMapping("/avatar")
+    @Operation(summary = "修改用户头像")
+    @LoginCheck
+    public Result uploadAvatar(@RequestParam("file") MultipartFile file,@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String token) {
+        String avatarPath = userService.updateAvatar(file, token);
+        return Result.ok().data(avatarPath);
     }
 }

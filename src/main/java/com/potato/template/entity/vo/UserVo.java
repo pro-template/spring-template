@@ -10,7 +10,7 @@ public class UserVo implements Serializable {
     /**
      * 用户ID
      */
-    private Integer id;
+    private String id;
 
     /**
      * 用户名
