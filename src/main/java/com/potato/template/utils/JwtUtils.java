@@ -87,4 +87,18 @@ public class JwtUtils {
                 .parseClaimsJws(token);
         return (String) claimsJws.getBody().get("id");
     }
+
+
+    /**
+     * 获取用户id
+     * @param request
+     * @return
+     */
+    public static String parseId(HttpServletRequest request){
+        String token = request.getHeader("Authorization");
+        Jws<Claims> claimsJws = Jwts.parser()
+                .setSigningKey(SECRET_KEY)
+                .parseClaimsJws(token);
+        return (String) claimsJws.getBody().get("id");
+    }
 }

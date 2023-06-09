@@ -17,13 +17,6 @@ public interface IUserService extends IService<User> {
     String login(String email, String password);
 
     /**
-     * 登出接口
-     * @param userId
-     * @return
-     */
-    Boolean logout(Long userId);
-
-    /**
      * 注册
      * @param userRegisterParam
      * @return

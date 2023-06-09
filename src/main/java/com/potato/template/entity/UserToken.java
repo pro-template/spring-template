@@ -1,5 +1,6 @@
 package com.potato.template.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
@@ -18,6 +19,6 @@ public class UserToken implements Serializable {
     /**
      * token
      */
-    @TableId(value = "token")
+    @TableField(value = "token")
     private String token;
 }

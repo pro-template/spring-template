@@ -64,10 +64,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         throw new BusinessException(HttpCodeEnum.SYSTEM_ERROR,"登录失败");
     }
 
-    @Override
-    public Boolean logout(Long userId) {
-        return null;
-    }
 
     @Override
     public String register(UserRegisterParam userRegisterParam) {
