@@ -4,6 +4,7 @@ import com.potato.template.annotation.LoginCheck;
 import com.potato.template.entity.param.UserLoginParam;
 import com.potato.template.entity.param.UserRegisterParam;
 import com.potato.template.entity.param.UserUpdateParam;
+import com.potato.template.entity.param.UserUpdatePwdParam;
 import com.potato.template.entity.vo.UserVo;
 import com.potato.template.service.IUserService;
 import com.potato.template.utils.Result;
@@ -68,5 +69,11 @@ public class UserController {
     public Result uploadAvatar(@RequestParam("file") MultipartFile file,@RequestHeader(name = HttpHeaders.AUTHORIZATION, required = false) String token) {
         String avatarPath = userService.updateAvatar(file, token);
         return Result.ok().data(avatarPath);
+    }
+
+    @PostMapping("/update_pwd")
+    public Result updatePwd(@RequestBody @Validated UserUpdatePwdParam userUpdatePwdParam){
+        Boolean updateResult = userService.updatePwd(userUpdatePwdParam);
+        return Result.ok().data(updateResult);
     }
 }

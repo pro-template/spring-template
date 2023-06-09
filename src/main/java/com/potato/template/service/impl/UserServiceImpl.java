@@ -1,11 +1,13 @@
 package com.potato.template.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.potato.template.entity.User;
 import com.potato.template.entity.UserToken;
 import com.potato.template.entity.param.UserRegisterParam;
 import com.potato.template.entity.param.UserUpdateParam;
+import com.potato.template.entity.param.UserUpdatePwdParam;
 import com.potato.template.entity.vo.UserVo;
 import com.potato.template.exception.BusinessException;
 import com.potato.template.mapper.UserMapper;
@@ -13,6 +15,7 @@ import com.potato.template.mapper.UserTokenMapper;
 import com.potato.template.service.IUserService;
 import com.potato.template.utils.HttpCodeEnum;
 import com.potato.template.utils.JwtUtils;
+import com.potato.template.utils.RedisCache;
 import com.potato.template.utils.UploadUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +37,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Resource
     private UserTokenMapper userTokenMapper;
+
+    @Resource
+    private RedisCache redisCache;
 
     /**
      * 盐值，混淆密码
@@ -179,5 +185,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         } catch (IOException e) {
             throw new BusinessException(HttpCodeEnum.SYSTEM_ERROR, "上传头像失败");
         }
+    }
+
+    @Override
+    public Boolean updatePwd(UserUpdatePwdParam userUpdatePwdParam) {
+        String email = userUpdatePwdParam.getEmail();
+        String code = userUpdatePwdParam.getCode();
+        String password = userUpdatePwdParam.getPassword();
+        QueryWrapper<User> w = new QueryWrapper<>();
+        w.eq("email",email);
+        User user = this.getOne(w);
+
+        //账号存在校验
+        if (null == user) {
+            throw new BusinessException(HttpCodeEnum.PARAMS_ERROR, "账号不存在！");
+        };
+
+        // 验证码过期校验
+        String cacheCode = redisCache.getCacheObject(email); // 获取缓存中该账号的验证码
+        if (cacheCode == null) {
+            throw new BusinessException(HttpCodeEnum.OPERATION_ERROR, "验证码已过期，请重新获取！");
+        }
+
+        // 验证码正确性校验
+        if (!cacheCode.equals(code)) {
+            throw new BusinessException(HttpCodeEnum.OPERATION_ERROR, "验证码错误");
+        }
+        // MD5加密
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + password).getBytes());
+        user.setPassword(encryptPassword);
+        boolean updateResult = this.updateById(user);
+        if (updateResult) {
+            // 将验证码过期
+            redisCache.expire(email, 0);
+        }
+        // 修改密码
+        return updateResult;
     }
 }

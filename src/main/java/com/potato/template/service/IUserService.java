@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.potato.template.entity.User;
 import com.potato.template.entity.param.UserRegisterParam;
 import com.potato.template.entity.param.UserUpdateParam;
+import com.potato.template.entity.param.UserUpdatePwdParam;
 import com.potato.template.entity.vo.UserVo;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -53,4 +54,11 @@ public interface IUserService extends IService<User> {
      * @return
      */
     String updateAvatar(MultipartFile file,String token);
+
+    /**
+     * 修改用户密码
+     * @param userUpdatePwdParam
+     * @return
+     */
+    Boolean updatePwd(UserUpdatePwdParam userUpdatePwdParam);
 }
